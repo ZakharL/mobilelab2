@@ -19,6 +19,7 @@ import org.json.*;
 import org.xmlpull.v1.XmlPullParser;
 
 import ru.pgtu.ps41.glazyrina.tatyana.lab2.entity.CurrencyInfo;
+import ru.pgtu.ps41.glazyrina.tatyana.lab2.utils.CurrencyGrabber;
 
 /**
  * import AndroidQuery
@@ -85,8 +86,6 @@ public class SubActivity extends Activity {
 		tvData = (TextView) findViewById(R.id.textView1);
 		
 		aq = new AQuery(this);
-		
-	
 
 		if (bandle != null) {
 			DataInfo dateAll = (DataInfo) bandle.get("dataInfo");
@@ -101,8 +100,6 @@ public class SubActivity extends Activity {
 			String month01 = dateToString(month1);
 			String month02 = dateToString(month2);
 			
-			
-		
 			
 			String urlStr = "http://www.cbr.ru/scripts/XML_daily_eng.asp?date_req=";
 			String urlStr1 = urlStr + day1.toString() + "/" + month01.toString() + "/" + year1.toString() ;
@@ -125,54 +122,13 @@ public class SubActivity extends Activity {
 		
 	}
 
-	public void async_xpp(String url) {
+	private void async_xpp(String url) {
 	
 		aq.ajax(url, XmlPullParser.class, new AjaxCallback<XmlPullParser>() {
 		
 			public void callback(String url, XmlPullParser xpp, AjaxStatus status) {
 				
-				String currentTitle = null;
-				
-				ArrayList <CurrencyInfo> currencyList = new ArrayList<CurrencyInfo>();
-				CurrencyInfo currentInfo = new CurrencyInfo();
-				
-				try {				
-					
-					int eventType = xpp.getEventType();
-					String currentTag = new String();
-					
-					while (eventType != XmlPullParser.END_DOCUMENT) {
-						
-						
-						if(eventType == XmlPullParser.START_TAG) {
-							currentTag = xpp.getName();
-							if ("Valute".equals(currentTag)) {
-								currentInfo = new CurrencyInfo();
-							}
-						} else if (eventType == XmlPullParser.END_TAG) {
-							if ("Valute".equals(xpp.getName())) {
-								currencyList.add(currentInfo);
-								Log.d("curt6", currentInfo.toString());
-							}						
-						} else if (eventType == XmlPullParser.TEXT) {
-							String text = xpp.getText();
-							if ("CharCode".equals(currentTag) && text.length() >= 3){
-								currentInfo.charCode = text;
-							}else if ("Name".equals(currentTag) && text.length() >= 3){
-								currentInfo.name = text;
-							}else if ("Value".equals(currentTag) && text.length() >= 3){
-								currentInfo.value = text;
-							}else if ("Nominal".equals(currentTag) && text.length() >= 3){
-								currentInfo.nominal = text;
-							}
-						 }
-						
-						eventType = xpp.next();
-					}
-				
-				} catch(Exception e) {
-					AQUtility.report(e);
-				}
+				ArrayList <CurrencyInfo> currencyList = CurrencyGrabber.getList(xpp);				
 			}
 		});
 		
